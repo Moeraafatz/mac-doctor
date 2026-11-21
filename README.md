@@ -9,6 +9,10 @@
 Built for Apple Silicon Macs (macOS 15+ & macOS 26 Liquid Glass).  
 **Zero root. Zero telemetry. Zero third-party dependencies. Zero subscriptions.**
 
+[![Download Latest](https://img.shields.io/badge/Download-MacDoctor--0.1.0.dmg-30D158?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Moeraafatz/mac-doctor/releases/latest)
+
+<br />
+
 [![macOS 15+](https://img.shields.io/badge/macOS-15%2B%20%7C%20Liquid%20Glass-000000?style=flat-square&logo=apple&logoColor=white)](#building--installing)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1%20%E2%80%93%20M4-111111?style=flat-square)](#features)
 [![Swift 6](https://img.shields.io/badge/Swift-6.0%20Strict%20Concurrency-white?style=flat-square&logo=swift&logoColor=black)](#architecture)
