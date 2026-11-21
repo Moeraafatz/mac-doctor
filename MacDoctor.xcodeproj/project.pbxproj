@@ -1,0 +1,702 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA0000000000000000000001 /* MacDoctorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000011 /* MacDoctorApp.swift */; };
+		AA0000000000000000000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000012 /* AppDelegate.swift */; };
+		AA0000000000000000000003 /* AppShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000013 /* AppShellView.swift */; };
+		AA0000000000000000000004 /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000014 /* AppTab.swift */; };
+		AA0000000000000000000005 /* AppTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* AppTabBar.swift */; };
+		AA0000000000000000000006 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000016 /* EmptyStateView.swift */; };
+		AA0000000000000000000007 /* MenuBarLabelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000017 /* MenuBarLabelView.swift */; };
+		AA0000000000000000000008 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000018 /* AppTheme.swift */; };
+		AA0000000000000000000009 /* GlassComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000019 /* GlassComponents.swift */; };
+		AA000000000000000000000A /* AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000001D /* AppLog.swift */; };
+		AA000000000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000001A /* Assets.xcassets */; };
+		AA0000000000000000000101 /* SystemMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000201 /* SystemMetrics.swift */; };
+		AA0000000000000000000102 /* SystemSampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000202 /* SystemSampling.swift */; };
+		AA0000000000000000000103 /* ServiceSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000203 /* ServiceSupport.swift */; };
+		AA0000000000000000000104 /* CPUService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000204 /* CPUService.swift */; };
+		AA0000000000000000000105 /* GPUService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000205 /* GPUService.swift */; };
+		AA0000000000000000000106 /* MemoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000206 /* MemoryService.swift */; };
+		AA0000000000000000000107 /* DiskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000207 /* DiskService.swift */; };
+		AA0000000000000000000108 /* BatteryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000208 /* BatteryService.swift */; };
+		AA0000000000000000000109 /* ThermalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000209 /* ThermalService.swift */; };
+		AA000000000000000000010A /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000020A /* NetworkService.swift */; };
+		AA000000000000000000010B /* SystemSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000020B /* SystemSampler.swift */; };
+		AA000000000000000000010C /* VitalsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000020C /* VitalsStore.swift */; };
+		AA000000000000000000010D /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000020D /* OverviewView.swift */; };
+		AA000000000000000000010E /* CPUPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000020E /* CPUPanel.swift */; };
+		AA000000000000000000010F /* Sparkline.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000020F /* Sparkline.swift */; };
+		AA0000000000000000000110 /* MetricTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000210 /* MetricTile.swift */; };
+		AA0000000000000000000111 /* MetricFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000211 /* MetricFormatting.swift */; };
+		AA0000000000000000000112 /* TemperatureMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000212 /* TemperatureMetrics.swift */; };
+		AA0000000000000000000113 /* SensorBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000213 /* SensorBridge.swift */; };
+		AA0000000000000000000114 /* TemperatureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000214 /* TemperatureService.swift */; };
+		AA0000000000000000000115 /* TemperaturesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000215 /* TemperaturesView.swift */; };
+		AA0000000000000000000116 /* ProcessMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000216 /* ProcessMetrics.swift */; };
+		AA0000000000000000000117 /* ProcessSampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000217 /* ProcessSampling.swift */; };
+		AA0000000000000000000118 /* NettopRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000218 /* NettopRunner.swift */; };
+		AA0000000000000000000119 /* ProcessService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000219 /* ProcessService.swift */; };
+		AA000000000000000000011A /* ProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000021A /* ProcessController.swift */; };
+		AA000000000000000000011B /* ProcessStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000021B /* ProcessStore.swift */; };
+		AA000000000000000000011C /* ProcessRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000021C /* ProcessRowView.swift */; };
+		AA000000000000000000011D /* ProcessConfirmationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000021D /* ProcessConfirmationSheet.swift */; };
+		AA000000000000000000011E /* ProcessesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000021E /* ProcessesView.swift */; };
+		AA000000000000000000011F /* NetworkMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000021F /* NetworkMetrics.swift */; };
+		AA0000000000000000000120 /* SubprocessRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000220 /* SubprocessRunner.swift */; };
+		AA0000000000000000000121 /* NetworkDiagnosticsProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000221 /* NetworkDiagnosticsProtocols.swift */; };
+		AA0000000000000000000122 /* ConnectionInfoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000222 /* ConnectionInfoService.swift */; };
+		AA0000000000000000000123 /* SpeedTestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000223 /* SpeedTestService.swift */; };
+		AA0000000000000000000124 /* SpeedTestHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000224 /* SpeedTestHistoryStore.swift */; };
+		AA0000000000000000000125 /* PingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000225 /* PingService.swift */; };
+		AA0000000000000000000126 /* PublicIPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000226 /* PublicIPService.swift */; };
+		AA0000000000000000000127 /* NetworkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000227 /* NetworkStore.swift */; };
+		AA0000000000000000000128 /* ThroughputGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000228 /* ThroughputGraph.swift */; };
+		AA0000000000000000000129 /* NetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000229 /* NetworkView.swift */; };
+		AA000000000000000000012A /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000022A /* AppSettings.swift */; };
+		AA000000000000000000012B /* SystemPreferencesProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000022B /* SystemPreferencesProtocols.swift */; };
+		AA000000000000000000012C /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000022C /* LaunchAtLoginService.swift */; };
+		AA000000000000000000012D /* AlertNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000022D /* AlertNotificationService.swift */; };
+		AA000000000000000000012E /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000022E /* SettingsStore.swift */; };
+		AA000000000000000000012F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000022F /* SettingsView.swift */; };
+		AA0000000000000000000130 /* SleepAssertionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000230 /* SleepAssertionService.swift */; };
+		AA0000000000000000000131 /* StorageMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000231 /* StorageMetrics.swift */; };
+		AA0000000000000000000132 /* StorageCleanerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000232 /* StorageCleanerService.swift */; };
+		AA0000000000000000000133 /* StorageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000233 /* StorageStore.swift */; };
+		AA0000000000000000000134 /* CleanerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000234 /* CleanerView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AA0000000000000000000011 /* MacDoctorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDoctorApp.swift; sourceTree = "<group>"; };
+		AA0000000000000000000012 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AA0000000000000000000013 /* AppShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000014 /* AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
+		AA0000000000000000000015 /* AppTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTabBar.swift; sourceTree = "<group>"; };
+		AA0000000000000000000016 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000017 /* MenuBarLabelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarLabelView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000018 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		AA0000000000000000000019 /* GlassComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassComponents.swift; sourceTree = "<group>"; };
+		AA000000000000000000001A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA000000000000000000001B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA000000000000000000001C /* MacDoctor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacDoctor.entitlements; sourceTree = "<group>"; };
+		AA000000000000000000001D /* AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLog.swift; sourceTree = "<group>"; };
+		AA000000000000000000001E /* Mac Doctor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Mac Doctor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000201 /* SystemMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetrics.swift; sourceTree = "<group>"; };
+		AA0000000000000000000202 /* SystemSampling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSampling.swift; sourceTree = "<group>"; };
+		AA0000000000000000000203 /* ServiceSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceSupport.swift; sourceTree = "<group>"; };
+		AA0000000000000000000204 /* CPUService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000205 /* GPUService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPUService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000206 /* MemoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000207 /* DiskService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000208 /* BatteryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000209 /* ThermalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThermalService.swift; sourceTree = "<group>"; };
+		AA000000000000000000020A /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		AA000000000000000000020B /* SystemSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSampler.swift; sourceTree = "<group>"; };
+		AA000000000000000000020C /* VitalsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalsStore.swift; sourceTree = "<group>"; };
+		AA000000000000000000020D /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
+		AA000000000000000000020E /* CPUPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUPanel.swift; sourceTree = "<group>"; };
+		AA000000000000000000020F /* Sparkline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sparkline.swift; sourceTree = "<group>"; };
+		AA0000000000000000000210 /* MetricTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTile.swift; sourceTree = "<group>"; };
+		AA0000000000000000000211 /* MetricFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricFormatting.swift; sourceTree = "<group>"; };
+		AA0000000000000000000212 /* TemperatureMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureMetrics.swift; sourceTree = "<group>"; };
+		AA0000000000000000000213 /* SensorBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorBridge.swift; sourceTree = "<group>"; };
+		AA0000000000000000000214 /* TemperatureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000215 /* TemperaturesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperaturesView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000216 /* ProcessMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessMetrics.swift; sourceTree = "<group>"; };
+		AA0000000000000000000217 /* ProcessSampling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessSampling.swift; sourceTree = "<group>"; };
+		AA0000000000000000000218 /* NettopRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NettopRunner.swift; sourceTree = "<group>"; };
+		AA0000000000000000000219 /* ProcessService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessService.swift; sourceTree = "<group>"; };
+		AA000000000000000000021A /* ProcessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessController.swift; sourceTree = "<group>"; };
+		AA000000000000000000021B /* ProcessStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessStore.swift; sourceTree = "<group>"; };
+		AA000000000000000000021C /* ProcessRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessRowView.swift; sourceTree = "<group>"; };
+		AA000000000000000000021D /* ProcessConfirmationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessConfirmationSheet.swift; sourceTree = "<group>"; };
+		AA000000000000000000021E /* ProcessesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessesView.swift; sourceTree = "<group>"; };
+		AA000000000000000000021F /* NetworkMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMetrics.swift; sourceTree = "<group>"; };
+		AA0000000000000000000220 /* SubprocessRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubprocessRunner.swift; sourceTree = "<group>"; };
+		AA0000000000000000000221 /* NetworkDiagnosticsProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkDiagnosticsProtocols.swift; sourceTree = "<group>"; };
+		AA0000000000000000000222 /* ConnectionInfoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionInfoService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000223 /* SpeedTestService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedTestService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000224 /* SpeedTestHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedTestHistoryStore.swift; sourceTree = "<group>"; };
+		AA0000000000000000000225 /* PingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PingService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000226 /* PublicIPService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicIPService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000227 /* NetworkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkStore.swift; sourceTree = "<group>"; };
+		AA0000000000000000000228 /* ThroughputGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThroughputGraph.swift; sourceTree = "<group>"; };
+		AA0000000000000000000229 /* NetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkView.swift; sourceTree = "<group>"; };
+		AA000000000000000000022A /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		AA000000000000000000022B /* SystemPreferencesProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemPreferencesProtocols.swift; sourceTree = "<group>"; };
+		AA000000000000000000022C /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
+		AA000000000000000000022D /* AlertNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertNotificationService.swift; sourceTree = "<group>"; };
+		AA000000000000000000022E /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		AA000000000000000000022F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000230 /* SleepAssertionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepAssertionService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000231 /* StorageMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageMetrics.swift; sourceTree = "<group>"; };
+		AA0000000000000000000232 /* StorageCleanerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageCleanerService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000233 /* StorageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageStore.swift; sourceTree = "<group>"; };
+		AA0000000000000000000234 /* CleanerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanerView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA0000000000000000000072 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA0000000000000000000021 = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000022 /* MacDoctor */,
+				AA0000000000000000000028 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000022 /* MacDoctor */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000023 /* App */,
+				AA0000000000000000000024 /* AppShell */,
+				AA000000000000000000002D /* Views */,
+				AA0000000000000000000029 /* Models */,
+				AA000000000000000000002A /* Services */,
+				AA000000000000000000002B /* ViewModels */,
+				AA0000000000000000000025 /* DesignSystem */,
+				AA0000000000000000000026 /* Resources */,
+				AA0000000000000000000027 /* Support */,
+			);
+			path = MacDoctor;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000023 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000011 /* MacDoctorApp.swift */,
+				AA0000000000000000000012 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000024 /* AppShell */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000013 /* AppShellView.swift */,
+				AA0000000000000000000014 /* AppTab.swift */,
+				AA0000000000000000000015 /* AppTabBar.swift */,
+				AA0000000000000000000016 /* EmptyStateView.swift */,
+				AA0000000000000000000017 /* MenuBarLabelView.swift */,
+			);
+			path = AppShell;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000025 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000018 /* AppTheme.swift */,
+				AA0000000000000000000019 /* GlassComponents.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000026 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000001A /* Assets.xcassets */,
+				AA000000000000000000001B /* Info.plist */,
+				AA000000000000000000001C /* MacDoctor.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000027 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000001D /* AppLog.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000029 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000201 /* SystemMetrics.swift */,
+				AA0000000000000000000212 /* TemperatureMetrics.swift */,
+				AA0000000000000000000216 /* ProcessMetrics.swift */,
+				AA000000000000000000021F /* NetworkMetrics.swift */,
+				AA000000000000000000022A /* AppSettings.swift */,
+				AA0000000000000000000231 /* StorageMetrics.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000202 /* SystemSampling.swift */,
+				AA0000000000000000000203 /* ServiceSupport.swift */,
+				AA0000000000000000000204 /* CPUService.swift */,
+				AA0000000000000000000205 /* GPUService.swift */,
+				AA0000000000000000000206 /* MemoryService.swift */,
+				AA0000000000000000000207 /* DiskService.swift */,
+				AA0000000000000000000208 /* BatteryService.swift */,
+				AA0000000000000000000209 /* ThermalService.swift */,
+				AA000000000000000000020A /* NetworkService.swift */,
+				AA000000000000000000020B /* SystemSampler.swift */,
+				AA0000000000000000000214 /* TemperatureService.swift */,
+				AA0000000000000000000213 /* SensorBridge.swift */,
+				AA0000000000000000000217 /* ProcessSampling.swift */,
+				AA0000000000000000000218 /* NettopRunner.swift */,
+				AA0000000000000000000219 /* ProcessService.swift */,
+				AA000000000000000000021A /* ProcessController.swift */,
+				AA0000000000000000000220 /* SubprocessRunner.swift */,
+				AA0000000000000000000221 /* NetworkDiagnosticsProtocols.swift */,
+				AA0000000000000000000222 /* ConnectionInfoService.swift */,
+				AA0000000000000000000223 /* SpeedTestService.swift */,
+				AA0000000000000000000224 /* SpeedTestHistoryStore.swift */,
+				AA0000000000000000000225 /* PingService.swift */,
+				AA0000000000000000000226 /* PublicIPService.swift */,
+				AA000000000000000000022B /* SystemPreferencesProtocols.swift */,
+				AA000000000000000000022C /* LaunchAtLoginService.swift */,
+				AA000000000000000000022D /* AlertNotificationService.swift */,
+				AA0000000000000000000230 /* SleepAssertionService.swift */,
+				AA0000000000000000000232 /* StorageCleanerService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002B /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000020C /* VitalsStore.swift */,
+				AA000000000000000000021B /* ProcessStore.swift */,
+				AA0000000000000000000227 /* NetworkStore.swift */,
+				AA000000000000000000022E /* SettingsStore.swift */,
+				AA0000000000000000000233 /* StorageStore.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002C /* Overview */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000020D /* OverviewView.swift */,
+				AA000000000000000000020E /* CPUPanel.swift */,
+				AA000000000000000000020F /* Sparkline.swift */,
+				AA0000000000000000000210 /* MetricTile.swift */,
+				AA0000000000000000000211 /* MetricFormatting.swift */,
+			);
+			path = Overview;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000002C /* Overview */,
+				AA000000000000000000002E /* Temperatures */,
+				AA000000000000000000002F /* Processes */,
+				AA0000000000000000000030 /* Network */,
+				AA000000000000000000003A /* Settings */,
+				AA000000000000000000003B /* Cleaner */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000028 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000001E /* Mac Doctor.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002E /* Temperatures */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000215 /* TemperaturesView.swift */,
+			);
+			path = Temperatures;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002F /* Processes */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000021E /* ProcessesView.swift */,
+				AA000000000000000000021C /* ProcessRowView.swift */,
+				AA000000000000000000021D /* ProcessConfirmationSheet.swift */,
+			);
+			path = Processes;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000030 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000229 /* NetworkView.swift */,
+				AA0000000000000000000228 /* ThroughputGraph.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003A /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000022F /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003B /* Cleaner */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000234 /* CleanerView.swift */,
+			);
+			path = Cleaner;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA0000000000000000000031 /* MacDoctor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000052 /* Build configuration list for PBXNativeTarget "MacDoctor" */;
+			buildPhases = (
+				AA0000000000000000000071 /* Sources */,
+				AA0000000000000000000072 /* Frameworks */,
+				AA0000000000000000000073 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MacDoctor;
+			productName = MacDoctor;
+			productReference = AA000000000000000000001E /* Mac Doctor.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA0000000000000000000041 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					AA0000000000000000000031 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = AA0000000000000000000051 /* Build configuration list for PBXProject "MacDoctor" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA0000000000000000000021;
+			productRefGroup = AA0000000000000000000028 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA0000000000000000000031 /* MacDoctor */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA0000000000000000000073 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000000000000000000000B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA0000000000000000000071 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000001 /* MacDoctorApp.swift in Sources */,
+				AA0000000000000000000002 /* AppDelegate.swift in Sources */,
+				AA0000000000000000000003 /* AppShellView.swift in Sources */,
+				AA0000000000000000000004 /* AppTab.swift in Sources */,
+				AA0000000000000000000005 /* AppTabBar.swift in Sources */,
+				AA0000000000000000000006 /* EmptyStateView.swift in Sources */,
+				AA0000000000000000000007 /* MenuBarLabelView.swift in Sources */,
+				AA0000000000000000000008 /* AppTheme.swift in Sources */,
+				AA0000000000000000000009 /* GlassComponents.swift in Sources */,
+				AA000000000000000000000A /* AppLog.swift in Sources */,
+				AA0000000000000000000101 /* SystemMetrics.swift in Sources */,
+				AA0000000000000000000102 /* SystemSampling.swift in Sources */,
+				AA0000000000000000000103 /* ServiceSupport.swift in Sources */,
+				AA0000000000000000000104 /* CPUService.swift in Sources */,
+				AA0000000000000000000105 /* GPUService.swift in Sources */,
+				AA0000000000000000000106 /* MemoryService.swift in Sources */,
+				AA0000000000000000000107 /* DiskService.swift in Sources */,
+				AA0000000000000000000108 /* BatteryService.swift in Sources */,
+				AA0000000000000000000109 /* ThermalService.swift in Sources */,
+				AA000000000000000000010A /* NetworkService.swift in Sources */,
+				AA000000000000000000010B /* SystemSampler.swift in Sources */,
+				AA000000000000000000010C /* VitalsStore.swift in Sources */,
+				AA000000000000000000010D /* OverviewView.swift in Sources */,
+				AA000000000000000000010E /* CPUPanel.swift in Sources */,
+				AA000000000000000000010F /* Sparkline.swift in Sources */,
+				AA0000000000000000000110 /* MetricTile.swift in Sources */,
+				AA0000000000000000000111 /* MetricFormatting.swift in Sources */,
+				AA0000000000000000000112 /* TemperatureMetrics.swift in Sources */,
+				AA0000000000000000000113 /* SensorBridge.swift in Sources */,
+				AA0000000000000000000114 /* TemperatureService.swift in Sources */,
+				AA0000000000000000000115 /* TemperaturesView.swift in Sources */,
+				AA0000000000000000000116 /* ProcessMetrics.swift in Sources */,
+				AA0000000000000000000117 /* ProcessSampling.swift in Sources */,
+				AA0000000000000000000118 /* NettopRunner.swift in Sources */,
+				AA0000000000000000000119 /* ProcessService.swift in Sources */,
+				AA000000000000000000011A /* ProcessController.swift in Sources */,
+				AA000000000000000000011B /* ProcessStore.swift in Sources */,
+				AA000000000000000000011C /* ProcessRowView.swift in Sources */,
+				AA000000000000000000011D /* ProcessConfirmationSheet.swift in Sources */,
+				AA000000000000000000011E /* ProcessesView.swift in Sources */,
+				AA000000000000000000011F /* NetworkMetrics.swift in Sources */,
+				AA0000000000000000000120 /* SubprocessRunner.swift in Sources */,
+				AA0000000000000000000121 /* NetworkDiagnosticsProtocols.swift in Sources */,
+				AA0000000000000000000122 /* ConnectionInfoService.swift in Sources */,
+				AA0000000000000000000123 /* SpeedTestService.swift in Sources */,
+				AA0000000000000000000124 /* SpeedTestHistoryStore.swift in Sources */,
+				AA0000000000000000000125 /* PingService.swift in Sources */,
+				AA0000000000000000000126 /* PublicIPService.swift in Sources */,
+				AA0000000000000000000127 /* NetworkStore.swift in Sources */,
+				AA0000000000000000000128 /* ThroughputGraph.swift in Sources */,
+				AA0000000000000000000129 /* NetworkView.swift in Sources */,
+				AA000000000000000000012A /* AppSettings.swift in Sources */,
+				AA000000000000000000012B /* SystemPreferencesProtocols.swift in Sources */,
+				AA000000000000000000012C /* LaunchAtLoginService.swift in Sources */,
+				AA000000000000000000012D /* AlertNotificationService.swift in Sources */,
+				AA000000000000000000012E /* SettingsStore.swift in Sources */,
+				AA000000000000000000012F /* SettingsView.swift in Sources */,
+				AA0000000000000000000130 /* SleepAssertionService.swift in Sources */,
+				AA0000000000000000000131 /* StorageMetrics.swift in Sources */,
+				AA0000000000000000000132 /* StorageCleanerService.swift in Sources */,
+				AA0000000000000000000133 /* StorageStore.swift in Sources */,
+				AA0000000000000000000134 /* CleanerView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AA0000000000000000000061 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Debug;
+		};
+		AA0000000000000000000062 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Release;
+		};
+		AA0000000000000000000063 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "MacDoctor/Resources/MacDoctor.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "MacDoctor/Resources/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.macdoctor.app;
+				PRODUCT_MODULE_NAME = MacDoctor;
+				PRODUCT_NAME = "Mac Doctor";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		AA0000000000000000000064 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "MacDoctor/Resources/MacDoctor.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "MacDoctor/Resources/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.macdoctor.app;
+				PRODUCT_MODULE_NAME = MacDoctor;
+				PRODUCT_NAME = "Mac Doctor";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA0000000000000000000051 /* Build configuration list for PBXProject "MacDoctor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000061 /* Debug */,
+				AA0000000000000000000062 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000052 /* Build configuration list for PBXNativeTarget "MacDoctor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000063 /* Debug */,
+				AA0000000000000000000064 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AA0000000000000000000041 /* Project object */;
+}
