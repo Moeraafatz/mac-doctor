@@ -70,6 +70,10 @@
 		AA0000000000000000000132 /* StorageCleanerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000232 /* StorageCleanerService.swift */; };
 		AA0000000000000000000133 /* StorageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000233 /* StorageStore.swift */; };
 		AA0000000000000000000134 /* CleanerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000234 /* CleanerView.swift */; };
+		AA0000000000000000000135 /* AppRemoverMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000235 /* AppRemoverMetrics.swift */; };
+		AA0000000000000000000136 /* AppRemoverService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000236 /* AppRemoverService.swift */; };
+		AA0000000000000000000137 /* AppRemoverStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000237 /* AppRemoverStore.swift */; };
+		AA0000000000000000000138 /* AppRemoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000238 /* AppRemoverView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -139,6 +143,10 @@
 		AA0000000000000000000232 /* StorageCleanerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageCleanerService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000233 /* StorageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageStore.swift; sourceTree = "<group>"; };
 		AA0000000000000000000234 /* CleanerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanerView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000235 /* AppRemoverMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRemoverMetrics.swift; sourceTree = "<group>"; };
+		AA0000000000000000000236 /* AppRemoverService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRemoverService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000237 /* AppRemoverStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRemoverStore.swift; sourceTree = "<group>"; };
+		AA0000000000000000000238 /* AppRemoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRemoverView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -233,6 +241,7 @@
 				AA000000000000000000021F /* NetworkMetrics.swift */,
 				AA000000000000000000022A /* AppSettings.swift */,
 				AA0000000000000000000231 /* StorageMetrics.swift */,
+				AA0000000000000000000235 /* AppRemoverMetrics.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -268,6 +277,7 @@
 				AA000000000000000000022D /* AlertNotificationService.swift */,
 				AA0000000000000000000230 /* SleepAssertionService.swift */,
 				AA0000000000000000000232 /* StorageCleanerService.swift */,
+				AA0000000000000000000236 /* AppRemoverService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -280,6 +290,7 @@
 				AA0000000000000000000227 /* NetworkStore.swift */,
 				AA000000000000000000022E /* SettingsStore.swift */,
 				AA0000000000000000000233 /* StorageStore.swift */,
+				AA0000000000000000000237 /* AppRemoverStore.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -356,6 +367,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000234 /* CleanerView.swift */,
+				AA0000000000000000000238 /* AppRemoverView.swift */,
 			);
 			path = Cleaner;
 			sourceTree = "<group>";
@@ -491,6 +503,10 @@
 				AA0000000000000000000132 /* StorageCleanerService.swift in Sources */,
 				AA0000000000000000000133 /* StorageStore.swift in Sources */,
 				AA0000000000000000000134 /* CleanerView.swift in Sources */,
+				AA0000000000000000000135 /* AppRemoverMetrics.swift in Sources */,
+				AA0000000000000000000136 /* AppRemoverService.swift in Sources */,
+				AA0000000000000000000137 /* AppRemoverStore.swift in Sources */,
+				AA0000000000000000000138 /* AppRemoverView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -625,7 +641,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -635,7 +651,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.macdoctor.app;
 				PRODUCT_MODULE_NAME = MacDoctor;
 				PRODUCT_NAME = "Mac Doctor";
@@ -655,7 +671,7 @@
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -665,7 +681,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.macdoctor.app;
 				PRODUCT_MODULE_NAME = MacDoctor;
 				PRODUCT_NAME = "Mac Doctor";

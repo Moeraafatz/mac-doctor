@@ -4,12 +4,12 @@
 
 # Mac Doctor
 
-**Activity Monitor + iStat Menus + Safe Disk Cleaner — in one free, 2.3 MB native Swift 6 menu bar app.**
+**Activity Monitor + iStat Menus + Safe Disk Cleaner + App Uninstaller — in one free, ~2.4 MB native Swift 6 menu bar app.**
 
 Built for Apple Silicon Macs (macOS 15+ & macOS 26 Liquid Glass).  
 **Zero root. Zero telemetry. Zero third-party dependencies. Zero subscriptions.**
 
-[![Download Latest](https://img.shields.io/badge/Download-MacDoctor--0.1.0.dmg-30D158?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Moeraafatz/mac-doctor/releases/latest)
+[![Download Latest](https://img.shields.io/badge/Download-MacDoctor--0.2.0.dmg-30D158?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Moeraafatz/mac-doctor/releases/latest)
 
 <br />
 
@@ -42,6 +42,7 @@ Most Mac utilities make you choose between bloated paid suites, subscription "cl
 | **Grouped Task Manager + Safe Kill** | ✅ | ❌ | ❌ | ⚠️ Separate app |
 | **Built-in Speed Test + Live Ping + Wi-Fi** | ✅ | ⚠️ Partial | ❌ | ❌ |
 | **Safe Dev Cache & System Data Cleaner** | ✅ | ❌ | ✅ | ❌ |
+| **Deep App Remover (App + `~/Library` Leftovers)** | ✅ | ❌ | ✅ | ❌ |
 | **Zero Telemetry / Background Calls** | ✅ | ⚠️ Varies | ❌ | ✅ |
 
 ---
@@ -74,10 +75,15 @@ Most Mac utilities make you choose between bloated paid suites, subscription "cl
     </td>
   </tr>
   <tr>
-    <td align="center" colspan="2">
-      <img src="docs/screenshots/cleaner.png" alt="Safe Storage Cleaner Tab" width="50%" /><br />
-      <strong>Safe Storage Cleaner (`⌘5`)</strong><br />
+    <td align="center" width="50%">
+      <img src="docs/screenshots/cleaner.png" alt="Safe Storage Cleaner Tab" width="100%" /><br />
+      <strong>Safe Storage Cleaner (`⌘5` · Storage)</strong><br />
       <sub>One-click cleanup for Xcode DerivedData, Homebrew/pip/uv/npm/bun caches, logs & Trash + read-only System Data explorer</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/apps.png" alt="Deep App Remover Tab" width="100%" /><br />
+      <strong>Deep App Remover (`⌘5` · Apps)</strong><br />
+      <sub>Uninstall downloaded & App Store apps (including Adobe/subfolder suites) with exact <code>~/Library</code> leftovers — built-in macOS apps strictly protected</sub>
     </td>
   </tr>
 </table>
@@ -120,15 +126,19 @@ Most Mac utilities make you choose between bloated paid suites, subscription "cl
 - **Connection & Wi-Fi Info:** Interface (`Wi-Fi` / `Ethernet`), Local IP, Router IP, DNS servers, active VPN tunnel (`utun*`), Wi-Fi RSSI, noise, SNR, channel, band, and SSID (`"Hidden (permission needed)"` without Location Services).
 - **Private Public IP:** Hidden by default behind a **Show** button — fetched only on tap using an ephemeral session.
 
-### 5. Safe Storage Cleaner (`⌘5`)
-- Cleans **only** user-owned, 100% regenerable files behind a confirmation sheet:
+### 5. Safe Storage Cleaner & Deep App Remover (`⌘5`)
+- **Storage Mode — Safe Cache Cleaner:** Cleans **only** user-owned, 100% regenerable files behind a confirmation sheet:
   - **Xcode & Simulator Caches** (`DerivedData`, `CoreSimulator/Caches`, Previews)
   - **Developer Package Caches** (`Homebrew`, `pip`, `uv`, `npm`, `yarn`, `pnpm`, `bun`, `CocoaPods`, `SwiftPM`)
   - **Safe App Caches** (`~/Library/Caches` — explicitly skipping `com.apple.*`, CloudKit, Safari, Spotlight, and Mac Doctor)
   - **User Logs & Crash Reports** (`~/Library/Logs`)
   - **Trash** (`~/.Trash`, unchecked by default)
-- **Strict Path Jail:** Verifies every file is strictly inside an allowed home-folder cache root and is never a symlink. Never touches `/System`, `/Applications`, `Documents`, `Desktop`, `Preferences`, `Keychains`, `iCloud Drive`, or `Application Support`.
-- **What's in System Data (Read-Only):** Surfaces the biggest folders in `Application Support`, `Containers`, `~/.cache`, `Developer`, and `Downloads > 200 MB` with 1-click **Reveal in Finder** + macOS purgeable space & APFS snapshot count.
+  - **Strict Path Jail:** Verifies every file is strictly inside an allowed home-folder cache root and is never a symlink. Never touches `/System`, `Documents`, `Desktop`, `Keychains`, or `iCloud Drive`.
+  - **What's in System Data (Read-Only):** Surfaces the biggest folders in `Application Support`, `Containers`, `~/.cache`, `Developer`, and `Downloads > 200 MB` with 1-click **Reveal in Finder** + macOS purgeable space & APFS snapshot count.
+- **Apps Mode — Deep App Remover:**
+  - Lists **only** downloaded and Mac App Store apps (including vendor subfolders like Adobe Creative Cloud / Cinema 4D and non-system aliases) — built-in macOS apps (`/System/*`, `/Applications/Utilities`, Safari, Finder, Terminal, etc.) and Mac Doctor itself are **hidden and hard-blocked**.
+  - Scans exact `~/Library` leftovers (`Application Support`, `Caches`, `Containers`, `Group Containers`, `Preferences`, `Saved Application State`, `Logs`, `LaunchAgents`, `HTTPStorages`, `WebKit`, `Application Scripts`, plus vendor-nested app folders without ever touching parent vendor folders).
+  - Interactive checkbox review sheet before moving selected items to **Trash** (reversible, zero root). Automatically quits running apps first and offers a 1-click **Reveal in Finder** fallback for root-owned App Store bundles.
 
 ### 6. Settings (`⌘,`)
 - Refresh interval (`1s` / `2s` / `5s`), **Low Impact Mode** (automatically slows polling on battery), **Launch at Login** (`SMAppService.mainApp`), `°C` / `°F`, customizable alert thresholds, optional local macOS notifications (`UserNotifications` with 5-minute cooldown), and 1-click **Copy System Report**.
@@ -164,7 +174,7 @@ Select the **MacDoctor** scheme and press **⌘R**.
 ```sh
 ./build_dmg.sh --adhoc
 ```
-1. Open `dist/MacDoctor-0.1.0.dmg` and drag **Mac Doctor.app** into **/Applications**.
+1. Open `dist/MacDoctor-0.2.0.dmg` and drag **Mac Doctor.app** into **/Applications**.
 2. On first launch, macOS Gatekeeper may say it cannot verify the developer — click **Done**, then open **System Settings → Privacy & Security → Open Anyway** once.
 
 ### Option C — Signed & Notarized Release DMG (Paid Developer ID)
@@ -205,7 +215,7 @@ Mac Doctor asks for **zero** permissions on launch:
 
 ## Architecture
 
-- **MVVM + Protocol-Backed Actor Services:** Every data source sits behind a Swift protocol and polls off the main thread (`CPUService`, `GPUService`, `MemoryService`, `DiskService`, `BatteryService`, `ThermalService`, `NetworkService`, `TemperatureService`, `SleepAssertionService`, `ProcessService`, `ConnectionInfoService`, `SpeedTestService`, `PingService`, `PublicIPService`, `StorageCleanerService`).
+- **MVVM + Protocol-Backed Actor Services:** Every data source sits behind a Swift protocol and polls off the main thread (`CPUService`, `GPUService`, `MemoryService`, `DiskService`, `BatteryService`, `ThermalService`, `NetworkService`, `TemperatureService`, `SleepAssertionService`, `ProcessService`, `ConnectionInfoService`, `SpeedTestService`, `PingService`, `PublicIPService`, `StorageCleanerService`, `AppRemoverService`).
 - **Swift 6 Strict Concurrency:** Compiles cleanly with `SWIFT_STRICT_CONCURRENCY = complete` and zero warnings.
 - **Manual QA Checklist:** See [`docs/MANUAL_TEST_CHECKLIST.md`](docs/MANUAL_TEST_CHECKLIST.md).
 

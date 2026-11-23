@@ -2,21 +2,114 @@
 //  MacDoctor/Views/Cleaner/CleanerView.swift
 //  Mac Doctor
 //
-//  Safe Storage Cleaner & System Data Inspector styled in Black Liquid Glass
-//  with Claude-orange highlights. Cleans only user-owned regenerable caches,
-//  logs, and Trash behind an explicit confirmation sheet; System Data folders
-//  and large Downloads are read-only with one-click Reveal in Finder.
+//  Safe Storage Cleaner, System Data Inspector, and Deep App Remover styled in
+//  Black Liquid Glass with crisp White hierarchy. Cleans only user-owned
+//  regenerable caches, logs, and Trash, or moves third-party / App Store apps
+//  and their exact ~/Library leftovers to Trash behind explicit confirmation.
 //
 
 import SwiftUI
 
+enum CleanerMode: String, CaseIterable, Identifiable {
+    case storage
+    case apps
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .storage: "Storage"
+        case .apps: "Apps"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .storage: "sparkles"
+        case .apps: "square.grid.2x2"
+        }
+    }
+}
+
 struct CleanerView: View {
     @Bindable var store: StorageStore
+    @Bindable var appRemover: AppRemoverStore
+    var initialMode: CleanerMode = .storage
     var onDiskChanged: (() -> Void)? = nil
 
+    @State private var mode: CleanerMode = .storage
+    @State private var didApplyInitialMode = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        VStack(spacing: 8) {
+            modeSwitcher
+
+            switch mode {
+            case .storage:
+                storageContent
+            case .apps:
+                AppRemoverView(store: appRemover, onDiskChanged: onDiskChanged)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onAppear {
+            if !didApplyInitialMode {
+                mode = initialMode
+                didApplyInitialMode = true
+            }
+            if mode == .storage {
+                store.scanIfNeeded()
+            } else {
+                appRemover.loadIfNeeded()
+            }
+        }
+        .sheet(isPresented: $store.showCleanConfirmation) {
+            CleanConfirmationSheet(
+                categories: store.selectedCategories,
+                totalBytes: store.selectedBytes,
+                onCancel: { store.showCleanConfirmation = false },
+                onConfirm: {
+                    store.confirmClean(onFinished: onDiskChanged)
+                }
+            )
+        }
+    }
+
+    private var modeSwitcher: some View {
+        HStack(spacing: 4) {
+            ForEach(CleanerMode.allCases) { item in
+                let isSelected = mode == item
+                Button {
+                    withAnimation(reduceMotion ? nil : AppMotion.snappy) {
+                        mode = item
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: item.symbol)
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(item.title)
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundStyle(isSelected ? Color.black : Color.white.opacity(0.68))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 25)
+                    .background {
+                        if isSelected {
+                            RoundedRectangle(cornerRadius: 7.5, style: .continuous)
+                                .fill(Color.white)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(3)
+        .background { ObsidianCardBackground(cornerRadius: 10) }
+    }
+
+    private var storageContent: some View {
         VStack(spacing: 8) {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 10) {
@@ -52,20 +145,6 @@ struct CleanerView: View {
             if store.snapshot != nil {
                 cleanFooterBar
             }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .onAppear {
-            store.scanIfNeeded()
-        }
-        .sheet(isPresented: $store.showCleanConfirmation) {
-            CleanConfirmationSheet(
-                categories: store.selectedCategories,
-                totalBytes: store.selectedBytes,
-                onCancel: { store.showCleanConfirmation = false },
-                onConfirm: {
-                    store.confirmClean(onFinished: onDiskChanged)
-                }
-            )
         }
     }
 

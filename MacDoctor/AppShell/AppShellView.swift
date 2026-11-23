@@ -19,6 +19,7 @@ struct AppShellView: View {
     @State private var processes: ProcessStore
     @State private var network: NetworkStore
     @State private var storage: StorageStore
+    @State private var appRemover: AppRemoverStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @MainActor
@@ -27,7 +28,8 @@ struct AppShellView: View {
         settings: SettingsStore? = nil,
         processes: ProcessStore = ProcessStore(),
         network: NetworkStore = NetworkStore(),
-        storage: StorageStore = StorageStore()
+        storage: StorageStore = StorageStore(),
+        appRemover: AppRemoverStore = AppRemoverStore()
     ) {
         let resolvedSettings = settings ?? SettingsStore()
         self.settings = resolvedSettings
@@ -35,6 +37,7 @@ struct AppShellView: View {
         _processes = State(initialValue: processes)
         _network = State(initialValue: network)
         _storage = State(initialValue: storage)
+        _appRemover = State(initialValue: appRemover)
     }
 
     var body: some View {
@@ -123,6 +126,7 @@ struct AppShellView: View {
         case .cleaner:
             CleanerView(
                 store: storage,
+                appRemover: appRemover,
                 onDiskChanged: {
                     Task { await vitals.refreshOnce() }
                 }
@@ -153,6 +157,7 @@ struct AppShellView: View {
                     await network.refreshConnectionInfo()
                     if selection == .cleaner {
                         storage.startScan()
+                        appRemover.reload()
                     }
                 }
             }.keyboardShortcut("r", modifiers: .command)
