@@ -13,12 +13,24 @@ import IOKit
 actor DiskService: DiskSampling {
     private var previousCounters: (read: UInt64, write: UInt64)?
     private var previousUptime: TimeInterval?
+    private var cachedCapacity: (total: UInt64, free: UInt64, uptime: TimeInterval)?
+    private var cachedDriverService: io_service_t = 0
+    private var cachedDeviceName: String = "disk"
     private var didLogMissing = false
 
+    private let homeURL = URL(fileURLWithPath: NSHomeDirectory())
+    private static let capacityCacheTTL: TimeInterval = 10
+
+    deinit {
+        if cachedDriverService != 0 {
+            _ = IOObjectRelease(cachedDriverService)
+        }
+    }
+
     func sample() async -> DiskSample? {
-        let capacity = readCapacity()
-        let counters = readCounters()
         let uptime = ProcessInfo.processInfo.systemUptime
+        let capacity = readCapacityCached(at: uptime)
+        let counters = readCountersCached()
 
         var readRate: Double?
         var writeRate: Double?
@@ -53,9 +65,17 @@ actor DiskService: DiskSampling {
 
     // MARK: - Capacity
 
+    private func readCapacityCached(at uptime: TimeInterval) -> (total: UInt64, free: UInt64)? {
+        if let cachedCapacity, (uptime - cachedCapacity.uptime) < Self.capacityCacheTTL {
+            return (cachedCapacity.total, cachedCapacity.free)
+        }
+        guard let fresh = readCapacity() else { return cachedCapacity.map { ($0.total, $0.free) } }
+        cachedCapacity = (fresh.total, fresh.free, uptime)
+        return fresh
+    }
+
     private func readCapacity() -> (total: UInt64, free: UInt64)? {
-        let home = URL(fileURLWithPath: NSHomeDirectory())
-        guard let values = try? home.resourceValues(forKeys: [
+        guard let values = try? homeURL.resourceValues(forKeys: [
             .volumeTotalCapacityKey,
             .volumeAvailableCapacityKey
         ]),
@@ -70,36 +90,59 @@ actor DiskService: DiskSampling {
         return (UInt64(total), UInt64(free))
     }
 
-    // MARK: - Throughput
+    // MARK: - Throughput (cached IOBlockStorageDriver handle)
 
-    private func readCounters() -> (name: String, read: UInt64, write: UInt64)? {
+    private func readCountersCached() -> (name: String, read: UInt64, write: UInt64)? {
+        if cachedDriverService == 0 {
+            resolvePrimaryDriver()
+        }
+        if cachedDriverService != 0,
+           let statistics = IOKitProperty.value(cachedDriverService, "Statistics") as? [String: Any] {
+            let read = (statistics["Bytes (Read)"] as? NSNumber)?.uint64Value ?? 0
+            let write = (statistics["Bytes (Write)"] as? NSNumber)?.uint64Value ?? 0
+            return (cachedDeviceName, read, write)
+        }
+
+        // Re-resolve once if handle became stale.
+        if cachedDriverService != 0 {
+            _ = IOObjectRelease(cachedDriverService)
+            cachedDriverService = 0
+        }
+        resolvePrimaryDriver()
+        guard cachedDriverService != 0,
+              let statistics = IOKitProperty.value(cachedDriverService, "Statistics") as? [String: Any]
+        else {
+            return nil
+        }
+        let read = (statistics["Bytes (Read)"] as? NSNumber)?.uint64Value ?? 0
+        let write = (statistics["Bytes (Write)"] as? NSNumber)?.uint64Value ?? 0
+        return (cachedDeviceName, read, write)
+    }
+
+    private func resolvePrimaryDriver() {
         var iterator: io_iterator_t = 0
         guard IOServiceGetMatchingServices(
             kIOMainPortDefault,
             IOServiceMatching("IOBlockStorageDriver"),
             &iterator
         ) == KERN_SUCCESS else {
-            return nil
+            return
         }
         defer { _ = IOObjectRelease(iterator) }
 
-        var best: (name: String, read: UInt64, write: UInt64, size: UInt64)?
+        var bestService: io_service_t = 0
+        var bestName = "disk"
+        var bestSize: UInt64 = 0
 
         while true {
             let service = IOIteratorNext(iterator)
             if service == 0 { break }
-            defer { _ = IOObjectRelease(service) }
 
-            guard let statistics = IOKitProperty.value(service, "Statistics") as? [String: Any] else {
+            guard IOKitProperty.value(service, "Statistics") != nil else {
+                _ = IOObjectRelease(service)
                 continue
             }
 
-            let read = (statistics["Bytes (Read)"] as? NSNumber)?.uint64Value ?? 0
-            let write = (statistics["Bytes (Write)"] as? NSNumber)?.uint64Value ?? 0
-
-            // The driver itself has no BSD name; its whole-disk media child
-            // does. Pick the largest whole disk so disk images and small
-            // synthetic media cannot win.
             var name: String?
             var size: UInt64 = 0
             var childIterator: io_iterator_t = 0
@@ -131,20 +174,19 @@ actor DiskService: DiskSampling {
                 }
             }
 
-            let reading = (
-                name: name ?? "disk",
-                read: read,
-                write: write,
-                size: size
-            )
-
-            if let currentBest = best, reading.size <= currentBest.size {
-                continue
+            if bestService == 0 || size > bestSize {
+                if bestService != 0 {
+                    _ = IOObjectRelease(bestService)
+                }
+                bestService = service
+                bestName = name ?? "disk"
+                bestSize = size
+            } else {
+                _ = IOObjectRelease(service)
             }
-            best = reading
         }
 
-        guard let best else { return nil }
-        return (best.name, best.read, best.write)
+        cachedDriverService = bestService
+        cachedDeviceName = bestName
     }
 }

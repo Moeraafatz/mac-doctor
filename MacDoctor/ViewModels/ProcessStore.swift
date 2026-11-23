@@ -19,23 +19,33 @@ final class ProcessStore {
     private(set) var isRefreshing = false
     private(set) var quitAttemptedPIDs: Set<pid_t> = []
     private(set) var lastFeedback: ProcessActionResult?
+    /// Memoized sorted & grouped process list — recomputed only when snapshot,
+    /// sortKey, searchText, or groupByApp changes (never on hover/expand redraws).
+    private(set) var groupedProcesses: [ProcessGroup] = []
 
-    var sortKey: ProcessSortKey = .cpu
-    var searchText: String = ""
-    var groupByApp: Bool = true
+    var sortKey: ProcessSortKey = .cpu {
+        didSet { if oldValue != sortKey { rebuildGroupedProcesses() } }
+    }
+    var searchText: String = "" {
+        didSet { if oldValue != searchText { rebuildGroupedProcesses() } }
+    }
+    var groupByApp: Bool = true {
+        didSet { if oldValue != groupByApp { rebuildGroupedProcesses() } }
+    }
     var expandedGroupIDs: Set<String> = []
     var pendingAction: PendingProcessAction?
 
     private let sampler: any ProcessSampling
     private let controller: any ProcessControlling
     private let activeInterval: Duration
-    private let backgroundInterval: Duration
 
-    private var isProcessesTabVisible = false
-    private var isLowImpactActive = false
-    private var iconCache: [String: NSImage] = [:]
+    @ObservationIgnored private var isPopoverVisible = false
+    @ObservationIgnored private var isProcessesTabVisible = false
+    @ObservationIgnored private var isLowImpactActive = false
+    @ObservationIgnored private var pollingTask: Task<Void, Never>?
+    @ObservationIgnored private var iconCache: [String: NSImage] = [:]
     private let defaultProcessIcon: NSImage
-    private var feedbackDismissTask: Task<Void, Never>?
+    @ObservationIgnored private var feedbackDismissTask: Task<Void, Never>?
 
     init(
         sampler: any ProcessSampling = ProcessService(),
@@ -47,16 +57,24 @@ final class ProcessStore {
         self.sampler = sampler
         self.controller = controller
         self.activeInterval = activeInterval
-        self.backgroundInterval = backgroundInterval
         self.snapshot = initialSnapshot
 
         let fallback = NSImage(systemSymbolName: "terminal", accessibilityDescription: nil)
             ?? NSWorkspace.shared.icon(for: .unixExecutable)
         fallback.size = NSSize(width: 22, height: 22)
         self.defaultProcessIcon = fallback
+        rebuildGroupedProcesses()
     }
 
     var filteredProcesses: [ProcessEntry] {
+        computeFilteredProcesses()
+    }
+
+    private func rebuildGroupedProcesses() {
+        groupedProcesses = computeGroupedProcesses()
+    }
+
+    private func computeFilteredProcesses() -> [ProcessEntry] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         let base: [ProcessEntry]
         if query.isEmpty {
@@ -105,8 +123,8 @@ final class ProcessStore {
 
     /// Groups processes that share an enclosing `.app` bundle (parent app +
     /// embedded helpers/renderers) into collapsible aggregate rows.
-    var groupedProcesses: [ProcessGroup] {
-        let sorted = filteredProcesses
+    private func computeGroupedProcesses() -> [ProcessGroup] {
+        let sorted = computeFilteredProcesses()
         guard groupByApp else {
             return sorted.map { singleGroup(for: $0) }
         }
@@ -234,26 +252,45 @@ final class ProcessStore {
         )
     }
 
-    func setProcessesTabVisible(_ visible: Bool) {
-        let changed = isProcessesTabVisible != visible
-        isProcessesTabVisible = visible
-        if changed && visible {
-            Task { await refreshOnce() }
+    func setPopoverVisible(_ visible: Bool) {
+        guard isPopoverVisible != visible else { return }
+        isPopoverVisible = visible
+        if !visible {
+            iconCache.removeAll(keepingCapacity: false)
         }
+        updatePollingState()
+    }
+
+    func setProcessesTabVisible(_ visible: Bool) {
+        guard isProcessesTabVisible != visible else { return }
+        isProcessesTabVisible = visible
+        updatePollingState()
     }
 
     func setLowImpactActive(_ active: Bool) {
         isLowImpactActive = active
     }
 
+    private func updatePollingState() {
+        let shouldPoll = isPopoverVisible && isProcessesTabVisible
+        if shouldPoll {
+            guard pollingTask == nil else { return }
+            pollingTask = Task(priority: .utility) { [weak self] in
+                await self?.run()
+            }
+        } else {
+            pollingTask?.cancel()
+            pollingTask = nil
+        }
+    }
+
     func run() async {
         while !Task.isCancelled {
             await refreshOnce()
 
-            let baseDuration = isProcessesTabVisible ? activeInterval : backgroundInterval
-            let sleepDuration = isLowImpactActive ? baseDuration * 2 : baseDuration
+            let sleepDuration = isLowImpactActive ? activeInterval * 2 : activeInterval
             do {
-                try await Task.sleep(for: sleepDuration)
+                try await Task.sleep(for: sleepDuration, tolerance: .milliseconds(400))
             } catch {
                 return
             }
@@ -265,10 +302,11 @@ final class ProcessStore {
         isRefreshing = true
         defer { isRefreshing = false }
 
-        let next = await sampler.sample(includeNetwork: isProcessesTabVisible)
+        let next = await sampler.sample(includeNetwork: isProcessesTabVisible && isPopoverVisible)
         guard !Task.isCancelled else { return }
 
         snapshot = next
+        rebuildGroupedProcesses()
 
         let livePIDs = Set(next.processes.map(\.pid))
         quitAttemptedPIDs.formIntersection(livePIDs)
@@ -365,14 +403,25 @@ final class ProcessStore {
             return defaultProcessIcon
         }
 
-        if iconCache.count >= 256 {
+        if iconCache.count >= 64 {
             iconCache.removeAll(keepingCapacity: true)
         }
 
-        let image = NSWorkspace.shared.icon(forFile: filePath)
-        image.size = NSSize(width: 22, height: 22)
+        let raw = NSWorkspace.shared.icon(forFile: filePath)
+        let image = Self.rasterizeThumbnail(raw, pointSize: 22)
         iconCache[key] = image
         return image
+    }
+
+    /// Flattens a multi-resolution `.icns` NSImage (which may embed a 1024×1024
+    /// representation weighing ~4 MB) into a single crisp @2x bitmap (~8 KB).
+    private static func rasterizeThumbnail(_ source: NSImage, pointSize: CGFloat) -> NSImage {
+        let size = NSSize(width: pointSize, height: pointSize)
+        return NSImage(size: size, flipped: false) { rect in
+            NSGraphicsContext.current?.imageInterpolation = .high
+            source.draw(in: rect, from: .zero, operation: .copy, fraction: 1.0)
+            return true
+        }
     }
 
     private func enclosingAppBundlePath(for executablePath: String) -> String? {

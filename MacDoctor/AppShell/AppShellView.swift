@@ -63,6 +63,11 @@ struct AppShellView: View {
             FooterView()
         }
         .background { keyboardShortcuts }
+        .background {
+            PopoverWindowObserver { visible in
+                handlePopoverVisibilityChanged(visible)
+            }
+        }
         .frame(width: AppLayout.popoverWidth, height: AppLayout.popoverHeight)
         .background(AppBackground())
         .tint(AppColors.accent)
@@ -70,22 +75,37 @@ struct AppShellView: View {
         .onAppear {
             vitals.startIfNeeded()
             processes.setLowImpactActive(vitals.isLowImpactActive)
+            syncVisibility(popoverVisible: true, tab: selection)
         }
-        .task {
-            processes.setProcessesTabVisible(selection == .processes)
-            await processes.run()
-        }
-        .task {
-            network.setNetworkTabVisible(selection == .network)
-            await network.runConnectionPolling()
+        .onDisappear {
+            handlePopoverVisibilityChanged(false)
         }
         .onChange(of: selection) { _, next in
-            processes.setProcessesTabVisible(next == .processes)
-            network.setNetworkTabVisible(next == .network)
+            syncTabVisibility(next)
         }
         .onChange(of: vitals.isLowImpactActive) { _, active in
             processes.setLowImpactActive(active)
         }
+    }
+
+    private func handlePopoverVisibilityChanged(_ visible: Bool) {
+        syncVisibility(popoverVisible: visible, tab: selection)
+        if !visible {
+            appRemover.trimMemory()
+        }
+    }
+
+    private func syncVisibility(popoverVisible: Bool, tab: AppTab) {
+        vitals.setPopoverVisible(popoverVisible)
+        processes.setPopoverVisible(popoverVisible)
+        network.setPopoverVisible(popoverVisible)
+        syncTabVisibility(tab)
+    }
+
+    private func syncTabVisibility(_ tab: AppTab) {
+        vitals.setTemperaturesTabVisible(tab == .temperatures)
+        processes.setProcessesTabVisible(tab == .processes)
+        network.setNetworkTabVisible(tab == .network)
     }
 
     @ViewBuilder
@@ -151,11 +171,13 @@ struct AppShellView: View {
                 focusSearchToken &+= 1
             }.keyboardShortcut("f", modifiers: .command)
             Button("") {
-                Task {
+                Task(priority: .utility) {
                     await vitals.refreshOnce()
-                    await processes.refreshOnce()
-                    await network.refreshConnectionInfo()
-                    if selection == .cleaner {
+                    if selection == .processes {
+                        await processes.refreshOnce()
+                    } else if selection == .network {
+                        await network.refreshConnectionInfo()
+                    } else if selection == .cleaner {
                         storage.startScan()
                         appRemover.reload()
                     }
@@ -276,6 +298,91 @@ private struct FooterView: View {
             Rectangle()
                 .fill(AppColors.hairline)
                 .frame(height: 0.5)
+        }
+    }
+}
+
+// MARK: - Popover window visibility observer
+
+/// Observes the backing `NSWindow` of SwiftUI's `MenuBarExtra(.window)` so
+/// background polling suspends immediately when the popover orders out, while
+/// staying active when a confirmation sheet is presented over the popover.
+private struct PopoverWindowObserver: NSViewRepresentable {
+    let onVisibilityChange: (Bool) -> Void
+
+    func makeNSView(context: Context) -> ObserverNSView {
+        let view = ObserverNSView()
+        view.onVisibilityChange = onVisibilityChange
+        return view
+    }
+
+    func updateNSView(_ nsView: ObserverNSView, context: Context) {
+        nsView.onVisibilityChange = onVisibilityChange
+    }
+
+    final class ObserverNSView: NSView {
+        var onVisibilityChange: ((Bool) -> Void)?
+        nonisolated(unsafe) private var observers: [NSObjectProtocol] = []
+        private var lastReported: Bool?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            removeObservers()
+
+            guard let window else {
+                report(false)
+                return
+            }
+
+            let center = NotificationCenter.default
+            let names: [Notification.Name] = [
+                NSWindow.didChangeOcclusionStateNotification,
+                NSWindow.didBecomeKeyNotification,
+                NSWindow.didResignKeyNotification,
+                NSWindow.willCloseNotification
+            ]
+
+            for name in names {
+                let isCloseEvent = (name == NSWindow.willCloseNotification)
+                let token = center.addObserver(
+                    forName: name,
+                    object: window,
+                    queue: .main
+                ) { [weak self, weak window] _ in
+                    MainActor.assumeIsolated {
+                        guard let self else { return }
+                        if isCloseEvent {
+                            self.report(false)
+                        } else if let window {
+                            let visible = window.isVisible && window.occlusionState.contains(.visible)
+                            self.report(visible)
+                        }
+                    }
+                }
+                observers.append(token)
+            }
+
+            let visible = window.isVisible && window.occlusionState.contains(.visible)
+            report(visible)
+        }
+
+        deinit {
+            for token in observers {
+                NotificationCenter.default.removeObserver(token)
+            }
+        }
+
+        private func removeObservers() {
+            for token in observers {
+                NotificationCenter.default.removeObserver(token)
+            }
+            observers.removeAll()
+        }
+
+        private func report(_ visible: Bool) {
+            guard lastReported != visible else { return }
+            lastReported = visible
+            onVisibilityChange?(visible)
         }
     }
 }

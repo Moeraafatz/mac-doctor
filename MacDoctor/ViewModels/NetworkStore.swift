@@ -36,12 +36,15 @@ final class NetworkStore {
     private let singlePingService: any PingTesting
     private let publicIPService: any PublicIPLookingUp
 
-    private var speedTestTask: Task<Void, Never>?
-    private var pingTask: Task<Void, Never>?
-    private var livePingTask: Task<Void, Never>?
-    private var publicIPTask: Task<Void, Never>?
-    private var isNetworkTabVisible = false
-    private let locationHelper = LocationPermissionHelper()
+    @ObservationIgnored private var speedTestTask: Task<Void, Never>?
+    @ObservationIgnored private var pingTask: Task<Void, Never>?
+    @ObservationIgnored private var livePingTask: Task<Void, Never>?
+    @ObservationIgnored private var publicIPTask: Task<Void, Never>?
+    @ObservationIgnored private var pollingTask: Task<Void, Never>?
+    @ObservationIgnored private var isPopoverVisible = false
+    @ObservationIgnored private var isNetworkTabVisible = false
+    @ObservationIgnored private var didLoadHistory = false
+    @ObservationIgnored private var locationHelper: LocationPermissionHelper?
 
     init(
         connectionService: any ConnectionInfoSampling = ConnectionInfoService(),
@@ -60,11 +63,8 @@ final class NetworkStore {
         self.publicIPService = publicIPService
         self.connectionInfo = initialConnectionInfo
         self.speedTestHistory = initialHistory
-
-        locationHelper.onAuthorizationChange = { [weak self] in
-            Task { @MainActor in
-                await self?.refreshConnectionInfo()
-            }
+        if !initialHistory.isEmpty {
+            self.didLoadHistory = true
         }
     }
 
@@ -83,32 +83,48 @@ final class NetworkStore {
 
     // MARK: - Lifecycle & local connection polling
 
+    func setPopoverVisible(_ visible: Bool) {
+        guard isPopoverVisible != visible else { return }
+        isPopoverVisible = visible
+        if !visible && isLivePingRunning {
+            stopLivePing()
+        }
+        updatePollingState()
+    }
+
     func setNetworkTabVisible(_ visible: Bool) {
-        let changed = isNetworkTabVisible != visible
+        guard isNetworkTabVisible != visible else { return }
         isNetworkTabVisible = visible
         if !visible && isLivePingRunning {
             stopLivePing()
         }
-        if changed && visible {
-            Task {
-                await refreshConnectionInfo()
-                if speedTestHistory.isEmpty {
-                    speedTestHistory = await historyStore.load()
-                }
+        updatePollingState()
+    }
+
+    private func updatePollingState() {
+        let shouldPoll = isPopoverVisible && isNetworkTabVisible
+        if shouldPoll {
+            guard pollingTask == nil else { return }
+            pollingTask = Task(priority: .utility) { [weak self] in
+                await self?.runConnectionPolling()
             }
+        } else {
+            pollingTask?.cancel()
+            pollingTask = nil
         }
     }
 
     func runConnectionPolling() async {
-        speedTestHistory = await historyStore.load()
+        if !didLoadHistory {
+            speedTestHistory = await historyStore.load()
+            didLoadHistory = true
+        }
 
         while !Task.isCancelled {
-            if isNetworkTabVisible {
-                await refreshConnectionInfo()
-            }
+            await refreshConnectionInfo()
 
             do {
-                try await Task.sleep(for: .seconds(5))
+                try await Task.sleep(for: .seconds(5), tolerance: .seconds(1))
             } catch {
                 return
             }
@@ -289,7 +305,17 @@ final class NetworkStore {
     // MARK: - Location permission for SSID
 
     func requestLocationPermission() {
-        locationHelper.requestOrOpenSettings()
+        let helper = locationHelper ?? {
+            let created = LocationPermissionHelper()
+            created.onAuthorizationChange = { [weak self] in
+                Task { @MainActor in
+                    await self?.refreshConnectionInfo()
+                }
+            }
+            self.locationHelper = created
+            return created
+        }()
+        helper.requestOrOpenSettings()
     }
 }
 

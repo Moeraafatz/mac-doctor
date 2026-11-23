@@ -308,24 +308,24 @@ private final class SMCReader {
         guard let output = call(&input) else { return nil }
 
         var raw = output.bytes
-        let bytes = withUnsafeBytes(of: &raw) { Array($0.prefix(Int(min(info.dataSize, 32)))) }
-
-        let celsius: Double
-        if info.dataType == Self.typeFloat, bytes.count >= 4 {
-            // Apple silicon stores "flt " in native (little-endian) order.
-            let bits = UInt32(bytes[0])
-                | UInt32(bytes[1]) << 8
-                | UInt32(bytes[2]) << 16
-                | UInt32(bytes[3]) << 24
-            celsius = Double(Float(bitPattern: bits))
-        } else if info.dataType == Self.typeSP78, bytes.count >= 2 {
-            // Signed 8.8 fixed point, big-endian.
-            let value = Int16(bitPattern: UInt16(bytes[0]) << 8 | UInt16(bytes[1]))
-            celsius = Double(value) / 256
-        } else {
+        let dataSize = Int(min(info.dataSize, 32))
+        let celsius: Double? = withUnsafeBytes(of: &raw) { buf in
+            if info.dataType == Self.typeFloat, dataSize >= 4 {
+                // Apple silicon stores "flt " in native (little-endian) order.
+                let bits = UInt32(buf[0])
+                    | UInt32(buf[1]) << 8
+                    | UInt32(buf[2]) << 16
+                    | UInt32(buf[3]) << 24
+                return Double(Float(bitPattern: bits))
+            } else if info.dataType == Self.typeSP78, dataSize >= 2 {
+                // Signed 8.8 fixed point, big-endian.
+                let value = Int16(bitPattern: UInt16(buf[0]) << 8 | UInt16(buf[1]))
+                return Double(value) / 256
+            }
             return nil
         }
 
+        guard let celsius else { return nil }
         return SensorBridge.isPlausible(celsius) ? celsius : nil
     }
 

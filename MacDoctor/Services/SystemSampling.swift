@@ -40,6 +40,13 @@ protocol NetworkSampling: Sendable {
 /// Per-sensor temperatures. Backed by SensorBridge (private API, isolated).
 protocol TemperatureSampling: Sendable {
     func sample() async -> TemperatureSample?
+    func sample(lightweight: Bool) async -> TemperatureSample?
+}
+
+extension TemperatureSampling {
+    func sample(lightweight: Bool) async -> TemperatureSample? {
+        await sample()
+    }
 }
 
 /// Active sleep-preventing power assertions via public IOPMCopyAssertionsByProcess.
@@ -47,6 +54,23 @@ protocol SleepAssertionSampling: Sendable {
     func sample() async -> [SleepBlocker]
 }
 
+/// Controls which hardware subsystems are polled on a given tick so background
+/// (popover-closed) operation uses near-zero CPU, wakeups, and power.
+enum SamplingScope: Sendable, Equatable {
+    /// Popover is open on Overview/Temps/Procs/Network — full hardware telemetry.
+    case activeFull(preferFullTemperatures: Bool)
+    /// Popover is closed — poll only the minimal subset required for menu bar
+    /// readout, threshold alerts, and AC/battery detection.
+    case background(includeTemperature: Bool, includeNetwork: Bool)
+}
+
 protocol SystemSampling: Sendable {
     func sample() async -> SystemSnapshot
+    func sample(scope: SamplingScope) async -> SystemSnapshot
+}
+
+extension SystemSampling {
+    func sample(scope: SamplingScope) async -> SystemSnapshot {
+        await sample()
+    }
 }

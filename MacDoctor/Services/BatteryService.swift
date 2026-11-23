@@ -16,33 +16,44 @@ import Foundation
 import IOKit
 
 actor BatteryService: BatterySampling {
+    private var cachedService: io_service_t = 0
     private var didLogMissing = false
 
+    deinit {
+        if cachedService != 0 {
+            _ = IOObjectRelease(cachedService)
+        }
+    }
+
     func sample() async -> BatterySample? {
-        var iterator: io_iterator_t = 0
-        guard IOServiceGetMatchingServices(
-            kIOMainPortDefault,
-            IOServiceMatching("AppleSmartBattery"),
-            &iterator
-        ) == KERN_SUCCESS else {
-            logMissing()
-            return nil
+        if cachedService == 0 {
+            resolveService()
         }
-        defer { _ = IOObjectRelease(iterator) }
-
-        let service = IOIteratorNext(iterator)
-        guard service != 0 else {
-            logMissing()
-            return nil
-        }
-        defer { _ = IOObjectRelease(service) }
-
-        guard let percentage = IOKitProperty.number(service, "CurrentCapacity")?.intValue else {
+        guard cachedService != 0 else {
             logMissing()
             return nil
         }
 
-        let batteryData = IOKitProperty.value(service, "BatteryData") as? [String: Any]
+        var props = IOKitProperty.allProperties(cachedService)
+        if props == nil {
+            _ = IOObjectRelease(cachedService)
+            cachedService = 0
+            resolveService()
+            guard cachedService != 0 else {
+                logMissing()
+                return nil
+            }
+            props = IOKitProperty.allProperties(cachedService)
+        }
+
+        guard let props,
+              let percentage = (props["CurrentCapacity"] as? NSNumber)?.intValue
+        else {
+            logMissing()
+            return nil
+        }
+
+        let batteryData = props["BatteryData"] as? [String: Any]
         let designCapacity = (batteryData?["DesignCapacity"] as? NSNumber)?.doubleValue
         let rawMaxCapacity = (batteryData?["AppleRawMaxCapacity"] as? NSNumber)?.doubleValue
         let temperature = (batteryData?["Temperature"] as? NSNumber)?.doubleValue
@@ -62,59 +73,56 @@ actor BatteryService: BatterySampling {
             return value
         }()
 
-        let remaining = IOKitProperty.number(service, "TimeRemaining")?.intValue
+        let remaining = (props["TimeRemaining"] as? NSNumber)?.intValue
         let minutesRemaining = remaining.flatMap { $0 > 0 && $0 < 65_535 ? $0 : nil }
-        let isPluggedIn = IOKitProperty.number(service, "ExternalConnected")?.boolValue ?? false
+        let isPluggedIn = (props["ExternalConnected"] as? NSNumber)?.boolValue ?? false
 
-        let adapterDetails = IOKitProperty.value(service, "AdapterDetails") as? [String: Any]
+        let adapterDetails = props["AdapterDetails"] as? [String: Any]
         let rawAdapterWatts = (adapterDetails?["Watts"] as? NSNumber)?.intValue
         let adapterWatts = (isPluggedIn && (rawAdapterWatts ?? 0) > 0) ? rawAdapterWatts : nil
 
+        let millivolts = (props["Voltage"] as? NSNumber)?.doubleValue
+        let milliamps = ((props["InstantAmperage"] as? NSNumber) ?? (props["Amperage"] as? NSNumber))?.int64Value
+
         let batteryNetWatts: Double? = {
-            guard let millivolts = IOKitProperty.number(service, "Voltage")?.doubleValue,
-                  let milliamps = (IOKitProperty.number(service, "InstantAmperage")
-                      ?? IOKitProperty.number(service, "Amperage"))?.int64Value
-            else {
-                return nil
-            }
+            guard let millivolts, let milliamps else { return nil }
             let watts = millivolts * Double(milliamps) / 1_000_000
             return abs(watts) < 300 ? watts : nil
         }()
 
         return BatterySample(
             percentage: min(max(percentage, 0), 100),
-            isCharging: IOKitProperty.number(service, "IsCharging")?.boolValue ?? false,
+            isCharging: (props["IsCharging"] as? NSNumber)?.boolValue ?? false,
             isPluggedIn: isPluggedIn,
             minutesRemaining: minutesRemaining,
-            cycleCount: IOKitProperty.number(service, "CycleCount")?.intValue,
+            cycleCount: (props["CycleCount"] as? NSNumber)?.intValue,
             health: health,
             temperatureCelsius: celsius,
-            powerWatts: powerDraw(service),
+            powerWatts: powerDraw(props: props, millivolts: millivolts, milliamps: milliamps),
             adapterWatts: adapterWatts,
             batteryNetWatts: batteryNetWatts
         )
     }
 
+    private func resolveService() {
+        let service = IOServiceGetMatchingService(
+            kIOMainPortDefault,
+            IOServiceMatching("AppleSmartBattery")
+        )
+        if service != 0 {
+            cachedService = service
+        }
+    }
+
     /// Whole-system power draw in watts.
-    ///
-    /// 1. `PowerTelemetryData.SystemLoad` (milliwatts) is what the power
-    ///    controller reports as total system consumption, on AC or battery.
-    /// 2. Fallback while discharging: battery `Voltage` (mV) × `Amperage`
-    ///    (mA, negative when discharging). On AC this would be the battery
-    ///    charge rate, not system draw, so it is not used there.
-    private func powerDraw(_ service: io_object_t) -> Double? {
-        let telemetry = IOKitProperty.value(service, "PowerTelemetryData") as? [String: Any]
+    private func powerDraw(props: [String: Any], millivolts: Double?, milliamps: Int64?) -> Double? {
+        let telemetry = props["PowerTelemetryData"] as? [String: Any]
         if let milliwatts = (telemetry?["SystemLoad"] as? NSNumber)?.doubleValue,
            milliwatts > 0, milliwatts < 300_000 {
             return milliwatts / 1_000
         }
 
-        guard
-            let millivolts = IOKitProperty.number(service, "Voltage")?.doubleValue,
-            let milliamps = (IOKitProperty.number(service, "InstantAmperage")
-                ?? IOKitProperty.number(service, "Amperage"))?.int64Value,
-            milliamps < 0
-        else {
+        guard let millivolts, let milliamps, milliamps < 0 else {
             return nil
         }
 

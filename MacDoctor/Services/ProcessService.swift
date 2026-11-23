@@ -46,12 +46,18 @@ actor ProcessService: ProcessSampling {
         let capturedAtNanoseconds: UInt64
     }
 
+    private struct CachedMetadata {
+        let executableName: String
+        let executablePath: String?
+    }
+
     private let nettop: any NettopSampling
     private let nettopMinIntervalNanoseconds: UInt64
     private let timebaseScale: Double
     private let currentUID: uid_t
     private let selfPID: pid_t
 
+    private var metadataCache: [ProcessIdentity: CachedMetadata] = [:]
     private var previousByIdentity: [ProcessIdentity: PreviousSample] = [:]
     private var highCPUSince: [ProcessIdentity: Date] = [:]
     private var memoryBaseline: [ProcessIdentity: (bytes: UInt64, date: Date)] = [:]
@@ -60,7 +66,7 @@ actor ProcessService: ProcessSampling {
 
     init(
         nettop: any NettopSampling = NettopRunner(),
-        nettopMinInterval: Duration = .seconds(4)
+        nettopMinInterval: Duration = .seconds(6)
     ) {
         self.nettop = nettop
         let components = nettopMinInterval.components
@@ -110,7 +116,17 @@ actor ProcessService: ProcessSampling {
             )
             activeIdentities.insert(identity)
 
-            let execName = Self.processName(pid: pid, bsd: bsd)
+            let meta: CachedMetadata
+            if let cached = metadataCache[identity] {
+                meta = cached
+            } else {
+                let execName = Self.processName(pid: pid, bsd: bsd)
+                let execPath = Self.processPath(pid)
+                meta = CachedMetadata(executableName: execName, executablePath: execPath)
+                metadataCache[identity] = meta
+            }
+
+            let execName = meta.executableName
             let appInfo = runningApps[pid]
             let displayName: String = {
                 if let localized = appInfo?.localizedName, !localized.isEmpty {
@@ -119,9 +135,12 @@ actor ProcessService: ProcessSampling {
                 return execName
             }()
 
-            let executablePath = Self.processPath(pid)
-            let rusage = Self.readRusage(pid)
-            let taskInfo = rusage == nil ? Self.readTaskInfo(pid) : nil
+            let executablePath = meta.executablePath
+            // Non-root callers receive EPERM for other UIDs on both rusage and
+            // taskinfo; skip those ~300 guaranteed-EPERM kernel traps per tick.
+            let isOwnProcess = (bsd.pbi_uid == currentUID)
+            let rusage = isOwnProcess ? Self.readRusage(pid) : nil
+            let taskInfo = (isOwnProcess && rusage == nil) ? Self.readTaskInfo(pid) : nil
 
             let cpuTicks: UInt64?
             let memoryBytes: UInt64
@@ -283,6 +302,7 @@ actor ProcessService: ProcessSampling {
         }
 
         previousByIdentity = nextPrevious
+        metadataCache = metadataCache.filter { activeIdentities.contains($0.key) }
         highCPUSince = highCPUSince.filter { activeIdentities.contains($0.key) }
         memoryBaseline = memoryBaseline.filter { activeIdentities.contains($0.key) }
 
@@ -387,21 +407,25 @@ actor ProcessService: ProcessSampling {
     }
 
     private static func processPath(_ pid: pid_t) -> String? {
-        var buffer = [CChar](repeating: 0, count: Int(MAXPATHLEN) * 4)
-        let length = proc_pidpath(pid, &buffer, UInt32(buffer.count))
-        guard length > 0 else { return nil }
-        let bytes = buffer.prefix(Int(length)).map { UInt8(bitPattern: $0) }
-        return String(decoding: bytes, as: UTF8.self)
+        withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(MAXPATHLEN) * 4) { buf in
+            guard let base = buf.baseAddress else { return nil }
+            let length = proc_pidpath(pid, base, UInt32(buf.count))
+            guard length > 0 else { return nil }
+            let raw = UnsafeRawBufferPointer(start: base, count: Int(length))
+            return String(decoding: raw, as: UTF8.self)
+        }
     }
 
     private static func processName(pid: pid_t, bsd: proc_bsdinfo) -> String {
-        var nameBuffer = [CChar](repeating: 0, count: Int(MAXPATHLEN))
-        let length = proc_name(pid, &nameBuffer, UInt32(nameBuffer.count))
-        if length > 0 {
-            let bytes = nameBuffer.prefix(Int(length)).map { UInt8(bitPattern: $0) }
-            let name = String(decoding: bytes, as: UTF8.self)
-            if !name.isEmpty { return name }
+        let found: String? = withUnsafeTemporaryAllocation(of: CChar.self, capacity: Int(MAXPATHLEN)) { buf in
+            guard let base = buf.baseAddress else { return nil }
+            let length = proc_name(pid, base, UInt32(buf.count))
+            guard length > 0 else { return nil }
+            let raw = UnsafeRawBufferPointer(start: base, count: Int(length))
+            let name = String(decoding: raw, as: UTF8.self)
+            return name.isEmpty ? nil : name
         }
+        if let found { return found }
 
         let bsdName = cString(from: bsd.pbi_name)
         if !bsdName.isEmpty { return bsdName }

@@ -57,9 +57,47 @@ actor TemperatureService: TemperatureSampling {
     }
 
     func sample() async -> TemperatureSample? {
+        await sample(lightweight: false)
+    }
+
+    /// Lightweight mode (used when the popover is closed) reads only the CPU
+    /// SMC sensors and skips the 30+ HID IPC calls (`IOHIDServiceClientCopyEvent`)
+    /// and GPU/battery/SSD probes, cutting sensor power & CPU dramatically.
+    func sample(lightweight: Bool) async -> TemperatureSample? {
         guard bridge.isHIDAvailable || bridge.isSMCAvailable else { return nil }
 
         let keys = resolveKeysIfNeeded()
+        if lightweight {
+            let pKeys = keys[.performanceCores] ?? []
+            let eKeys = keys[.efficiencyCores] ?? []
+            let cpuKeys = Array(pKeys.prefix(4)) + Array(eKeys.prefix(2))
+            if !cpuKeys.isEmpty {
+                let smcValues = bridge.readSMC(keys: cpuKeys)
+                var groups: [SensorGroup: TemperatureGroupReading] = [:]
+                groups[.performanceCores] = TemperatureGroupReading(
+                    group: .performanceCores,
+                    readings: pKeys.prefix(4).enumerated().compactMap { offset, key in
+                        smcValues[key].map {
+                            SensorReading(id: key, label: "\(SensorGroup.performanceCores.sensorNoun) \(offset + 1)", celsius: $0, source: .smc)
+                        }
+                    }
+                )
+                groups[.efficiencyCores] = TemperatureGroupReading(
+                    group: .efficiencyCores,
+                    readings: eKeys.prefix(2).enumerated().compactMap { offset, key in
+                        smcValues[key].map {
+                            SensorReading(id: key, label: "\(SensorGroup.efficiencyCores.sensorNoun) \(offset + 1)", celsius: $0, source: .smc)
+                        }
+                    }
+                )
+                return TemperatureSample(
+                    groups: groups,
+                    smcAvailable: bridge.isSMCAvailable,
+                    hidAvailable: bridge.isHIDAvailable
+                )
+            }
+        }
+
         let allKeys = keys.values.flatMap { $0 } + Self.smcBatteryKeys
         let smcValues = bridge.readSMC(keys: allKeys)
         let hid = bridge.readHIDSensors()

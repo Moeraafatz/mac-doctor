@@ -90,6 +90,22 @@ enum IOKitProperty {
     static func number(_ service: io_object_t, _ key: String) -> NSNumber? {
         value(service, key) as? NSNumber
     }
+
+    /// Reads the entire property dictionary in a single IOKit kernel crossing
+    /// instead of issuing 8–12 separate `IORegistryEntryCreateCFProperty` calls.
+    static func allProperties(_ service: io_object_t) -> [String: Any]? {
+        var unmanaged: Unmanaged<CFMutableDictionary>?
+        let status = IORegistryEntryCreateCFProperties(
+            service,
+            &unmanaged,
+            kCFAllocatorDefault,
+            0
+        )
+        guard status == KERN_SUCCESS, let dict = unmanaged?.takeRetainedValue() as? [String: Any] else {
+            return nil
+        }
+        return dict
+    }
 }
 
 // MARK: - CPU topology

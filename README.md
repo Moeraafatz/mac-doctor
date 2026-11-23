@@ -9,7 +9,7 @@
 Built for Apple Silicon Macs (macOS 15+ & macOS 26 Liquid Glass).  
 **Zero root. Zero telemetry. Zero third-party dependencies. Zero subscriptions.**
 
-[![Download Latest](https://img.shields.io/badge/Download-MacDoctor--0.2.0.dmg-30D158?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Moeraafatz/mac-doctor/releases/latest)
+[![Download Latest](https://img.shields.io/badge/Download-MacDoctor--0.2.1.dmg-30D158?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Moeraafatz/mac-doctor/releases/latest)
 
 <br />
 
@@ -36,7 +36,7 @@ Most Mac utilities make you choose between bloated paid suites, subscription "cl
 | | **Mac Doctor** | Paid Monitor Suites | Paid Mac Cleaners | Built-in Activity Monitor |
 | :--- | :---: | :---: | :---: | :---: |
 | **Price** | **Free & Open Source (MIT)** | $10–$18 | $35–$90/yr | Free |
-| **App Size** | **~2.3 MB native Swift** | 40–100 MB | 150–400 MB | Built-in |
+| **App Size / Idle RAM** | **~2.4 MB / ~16 MB RAM** | 40–100 MB | 150–400 MB | Built-in |
 | **Zero Root / Zero Helper Daemons** | ✅ | ⚠️ Often needs helper | ❌ Needs admin | ✅ |
 | **Apple Silicon Per-Sensor Temps** | ✅ | ✅ | ❌ | ❌ |
 | **Grouped Task Manager + Safe Kill** | ✅ | ❌ | ❌ | ⚠️ Separate app |
@@ -174,7 +174,7 @@ Select the **MacDoctor** scheme and press **⌘R**.
 ```sh
 ./build_dmg.sh --adhoc
 ```
-1. Open `dist/MacDoctor-0.2.0.dmg` and drag **Mac Doctor.app** into **/Applications**.
+1. Open `dist/MacDoctor-0.2.1.dmg` and drag **Mac Doctor.app** into **/Applications**.
 2. On first launch, macOS Gatekeeper may say it cannot verify the developer — click **Done**, then open **System Settings → Privacy & Security → Open Anyway** once.
 
 ### Option C — Signed & Notarized Release DMG (Paid Developer ID)

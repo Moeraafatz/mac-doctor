@@ -9,6 +9,7 @@
 //  dispatches optional macOS notifications.
 //
 
+import AppKit
 import Foundation
 import Observation
 
@@ -24,19 +25,36 @@ final class VitalsStore {
     private(set) var lastUpdated: Date?
     private(set) var menuBarAlertTone: StatusTone = .neutral
     private(set) var activeAlertSummary: String?
+    /// Pre-formatted compact menu bar string. Mutated ONLY when the rendered
+    /// text actually changes so `MenuBarLabelView` avoids needless redraws.
+    private(set) var menuBarDisplayText: String?
 
     private let sampler: any SystemSampling
     private let settings: SettingsStore
     private let notifier: any AlertNotifying
 
-    private var pollingTask: Task<Void, Never>?
-    private var highCPUSince: Date?
-    private var previousSampleDate: Date?
-    private var usageDayKey: String = ""
+    @ObservationIgnored private var pollingTask: Task<Void, Never>?
+    @ObservationIgnored private var highCPUSince: Date?
+    @ObservationIgnored private var previousSampleDate: Date?
+    @ObservationIgnored private var usageDayKey: String = ""
+    @ObservationIgnored private var lastUsagePersistUptime: TimeInterval = 0
+    @ObservationIgnored private var isPopoverVisible = false
+    @ObservationIgnored private var isTemperaturesTabVisible = false
+    @ObservationIgnored nonisolated(unsafe) private var terminateObserver: NSObjectProtocol?
+
+    // Non-observed backing buffers updated while the popover is closed so the
+    // hidden AppShellView SwiftUI graph suffers ZERO invalidations until opened.
+    @ObservationIgnored private var bufferedSnapshot: SystemSnapshot = .empty
+    @ObservationIgnored private var bufferedCPUHistory: [Double] = []
+    @ObservationIgnored private var bufferedTempHistory: [Double] = []
+    @ObservationIgnored private var bufferedNetworkHistory: [ThroughputPoint] = []
+    @ObservationIgnored private var bufferedTodayDown: UInt64 = 0
+    @ObservationIgnored private var bufferedTodayUp: UInt64 = 0
 
     private static let usageDayDefaultsKey = "dailyNetworkUsageDay"
     private static let usageDownDefaultsKey = "dailyNetworkDownBytes"
     private static let usageUpDefaultsKey = "dailyNetworkUpBytes"
+    private static let usagePersistInterval: TimeInterval = 60
 
     init(
         sampler: any SystemSampling = SystemSampler(),
@@ -47,11 +65,27 @@ final class VitalsStore {
         self.settings = settings
         self.notifier = notifier
         loadDailyUsage()
+        terminateObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.persistDailyUsageNow()
+            }
+        }
+    }
+
+    deinit {
+        if let terminateObserver {
+            NotificationCenter.default.removeObserver(terminateObserver)
+        }
     }
 
     /// True when the Mac has a battery and is currently unplugged.
     var isOnBattery: Bool {
-        guard let battery = snapshot.battery else { return false }
+        let battery = isPopoverVisible ? snapshot.battery : bufferedSnapshot.battery
+        guard let battery else { return false }
         return !battery.isPluggedIn
     }
 
@@ -99,11 +133,56 @@ final class VitalsStore {
         return .stable
     }
 
+    /// Updates popover visibility so background (closed) mode can drop to
+    /// minimal hardware polling with coalesced Efficiency-core wakeups, while
+    /// opening the popover immediately wakes full live telemetry.
+    func setPopoverVisible(_ visible: Bool) {
+        guard isPopoverVisible != visible else { return }
+        isPopoverVisible = visible
+        if visible {
+            flushBuffersToObservedState()
+        }
+        restartPollingLoop()
+    }
+
+    private func flushBuffersToObservedState() {
+        if bufferedSnapshot.hasReadings {
+            snapshot = bufferedSnapshot
+            lastUpdated = bufferedSnapshot.capturedAt
+        }
+        cpuHistory = bufferedCPUHistory
+        temperatureHistory = bufferedTempHistory
+        networkHistory = bufferedNetworkHistory
+        todayDownloadedBytes = bufferedTodayDown
+        todayUploadedBytes = bufferedTodayUp
+    }
+
+    func setTemperaturesTabVisible(_ visible: Bool) {
+        let changed = isTemperaturesTabVisible != visible
+        isTemperaturesTabVisible = visible
+        if changed && visible && isPopoverVisible {
+            Task(priority: .utility) { [weak self] in
+                await self?.refreshOnce()
+            }
+        }
+    }
+
     /// Starts the shared background polling loop once. Safe to call from both
     /// `MenuBarLabelView` and `AppShellView`.
     func startIfNeeded() {
         guard pollingTask == nil else { return }
-        pollingTask = Task { [weak self] in
+        restartPollingLoop()
+    }
+
+    func reschedulePolling() {
+        guard pollingTask != nil else { return }
+        restartPollingLoop()
+    }
+
+    private func restartPollingLoop() {
+        pollingTask?.cancel()
+        let priority: TaskPriority = isPopoverVisible ? .utility : .background
+        pollingTask = Task(priority: priority) { [weak self] in
             await self?.run()
         }
     }
@@ -112,53 +191,85 @@ final class VitalsStore {
         while !Task.isCancelled {
             await refreshOnce()
 
-            let sleepDuration = settings.effectivePollingDuration(isOnBattery: isOnBattery)
+            let (sleepDuration, tolerance) = nextSleepSchedule()
             do {
-                try await Task.sleep(for: sleepDuration)
+                try await Task.sleep(for: sleepDuration, tolerance: tolerance)
             } catch {
                 return
             }
         }
     }
 
+    private func nextSleepSchedule() -> (Duration, Duration) {
+        if isPopoverVisible {
+            let secs = settings.effectivePollingSeconds(isOnBattery: isOnBattery)
+            let tol = secs >= 5 ? Duration.milliseconds(600) : Duration.milliseconds(300)
+            return (.seconds(secs), tol)
+        }
+
+        // Popover is closed.
+        if settings.menuBarReadout == .none {
+            // Icon-only watchdog: coalesce wakeups aggressively to minimize
+            // CPU, package wakeups, and battery draw.
+            let secs = isLowImpactActive ? 15 : 10
+            return (.seconds(secs), .seconds(2))
+        }
+
+        // User enabled a live numeric menu bar readout — cap background
+        // SwiftUI MenuBarExtra redraws to at most once every 3s (5s+ on battery)
+        // with timer coalescing so macOS MenuBarExtraHost stays ultra-light.
+        let baseSecs = settings.effectivePollingSeconds(isOnBattery: isOnBattery)
+        let secs = max(baseSecs, isLowImpactActive ? 6 : 3)
+        return (.seconds(secs), .milliseconds(750))
+    }
+
+    private func currentSamplingScope() -> SamplingScope {
+        if isPopoverVisible {
+            return .activeFull(preferFullTemperatures: isTemperaturesTabVisible)
+        }
+        let needsTemp = settings.menuBarReadout == .temperature || settings.notificationsEnabled
+        let needsNet = settings.menuBarReadout == .network
+        return .background(includeTemperature: needsTemp, includeNetwork: needsNet)
+    }
+
     /// Samples once and applies the result.
     func refreshOnce() async {
-        let next = await sampler.sample()
+        let scope = currentSamplingScope()
+        let next = await sampler.sample(scope: scope)
         guard !Task.isCancelled else { return }
         apply(next)
     }
 
     private func apply(_ next: SystemSnapshot) {
-        snapshot = next
-        lastUpdated = next.capturedAt
+        bufferedSnapshot = next
 
         let limit = historyLimit
 
         if let usage = next.cpu?.totalUsage {
-            cpuHistory.append(min(max(usage, 0), 1))
-            if cpuHistory.count > limit {
-                cpuHistory.removeFirst(cpuHistory.count - limit)
+            bufferedCPUHistory.append(min(max(usage, 0), 1))
+            if bufferedCPUHistory.count > limit {
+                bufferedCPUHistory.removeFirst(bufferedCPUHistory.count - limit)
             }
         }
 
         if let hottestCelsius = next.temperatures?.hottest?.celsius, hottestCelsius.isFinite {
-            temperatureHistory.append(hottestCelsius)
-            if temperatureHistory.count > limit {
-                temperatureHistory.removeFirst(temperatureHistory.count - limit)
+            bufferedTempHistory.append(hottestCelsius)
+            if bufferedTempHistory.count > limit {
+                bufferedTempHistory.removeFirst(bufferedTempHistory.count - limit)
             }
         }
 
         if let down = next.network?.downloadBytesPerSecond,
            let up = next.network?.uploadBytesPerSecond {
-            networkHistory.append(
+            bufferedNetworkHistory.append(
                 ThroughputPoint(
                     downloadBytesPerSecond: down,
                     uploadBytesPerSecond: up,
                     timestamp: next.capturedAt
                 )
             )
-            if networkHistory.count > limit {
-                networkHistory.removeFirst(networkHistory.count - limit)
+            if bufferedNetworkHistory.count > limit {
+                bufferedNetworkHistory.removeFirst(bufferedNetworkHistory.count - limit)
             }
 
             if let prevDate = previousSampleDate {
@@ -172,7 +283,68 @@ final class VitalsStore {
         }
 
         previousSampleDate = next.capturedAt
+
+        // Only mutate @Observable popover properties when the popover is open;
+        // when closed, AppShellView stays 100% quiescent (zero SwiftUI redraws).
+        if isPopoverVisible {
+            snapshot = next
+            lastUpdated = next.capturedAt
+            cpuHistory = bufferedCPUHistory
+            temperatureHistory = bufferedTempHistory
+            networkHistory = bufferedNetworkHistory
+            todayDownloadedBytes = bufferedTodayDown
+            todayUploadedBytes = bufferedTodayUp
+        }
+
         evaluateThresholds(for: next)
+        refreshMenuBarDisplayText(for: next)
+    }
+
+    func refreshMenuBarDisplayText() {
+        refreshMenuBarDisplayText(for: bufferedSnapshot.hasReadings ? bufferedSnapshot : snapshot)
+    }
+
+    private func refreshMenuBarDisplayText(for sample: SystemSnapshot) {
+        let nextText: String?
+        switch settings.menuBarReadout {
+        case .none:
+            nextText = nil
+        case .cpu:
+            if let usage = sample.cpu?.totalUsage {
+                nextText = "\(Int((min(max(usage, 0), 1) * 100).rounded()))%"
+            } else {
+                nextText = "—"
+            }
+        case .temperature:
+            let celsius = sample.temperatures?.hottestCPU ?? sample.temperatures?.hottest?.celsius
+            nextText = settings.temperatureUnit.format(celsius, decimals: 0)
+        case .network:
+            if let down = sample.network?.downloadBytesPerSecond,
+               let up = sample.network?.uploadBytesPerSecond {
+                nextText = "↓\(Self.compactRate(down)) ↑\(Self.compactRate(up))"
+            } else {
+                nextText = "—"
+            }
+        }
+
+        if menuBarDisplayText != nextText {
+            menuBarDisplayText = nextText
+        }
+    }
+
+    private static func compactRate(_ bytesPerSecond: Double) -> String {
+        if bytesPerSecond < 1_000 {
+            return "\(Int(bytesPerSecond.rounded()))B"
+        }
+        let kb = bytesPerSecond / 1_000
+        if kb < 1_000 {
+            return "\(Int(kb.rounded()))K"
+        }
+        let mb = kb / 1_000
+        if mb < 1_000 {
+            return mb < 10 ? String(format: "%.1fM", mb) : "\(Int(mb.rounded()))M"
+        }
+        return String(format: "%.1fG", mb / 1_000)
     }
 
     // MARK: - Daily data usage & diagnostic report
@@ -218,31 +390,43 @@ final class VitalsStore {
         usageDayKey = today
         let defaults = UserDefaults.standard
         if defaults.string(forKey: Self.usageDayDefaultsKey) == today {
-            todayDownloadedBytes = UInt64(max(0, defaults.double(forKey: Self.usageDownDefaultsKey)))
-            todayUploadedBytes = UInt64(max(0, defaults.double(forKey: Self.usageUpDefaultsKey)))
+            bufferedTodayDown = UInt64(max(0, defaults.double(forKey: Self.usageDownDefaultsKey)))
+            bufferedTodayUp = UInt64(max(0, defaults.double(forKey: Self.usageUpDefaultsKey)))
         } else {
-            todayDownloadedBytes = 0
-            todayUploadedBytes = 0
+            bufferedTodayDown = 0
+            bufferedTodayUp = 0
             defaults.set(today, forKey: Self.usageDayDefaultsKey)
             defaults.set(0.0, forKey: Self.usageDownDefaultsKey)
             defaults.set(0.0, forKey: Self.usageUpDefaultsKey)
         }
+        todayDownloadedBytes = bufferedTodayDown
+        todayUploadedBytes = bufferedTodayUp
     }
 
     private func accumulateDailyUsage(downBytes: UInt64, upBytes: UInt64, at date: Date) {
         let today = Self.dayStamp(for: date)
+        var dayRolledOver = false
         if today != usageDayKey {
             usageDayKey = today
-            todayDownloadedBytes = 0
-            todayUploadedBytes = 0
+            bufferedTodayDown = 0
+            bufferedTodayUp = 0
+            dayRolledOver = true
         }
-        todayDownloadedBytes &+= downBytes
-        todayUploadedBytes &+= upBytes
+        bufferedTodayDown &+= downBytes
+        bufferedTodayUp &+= upBytes
 
+        let uptime = ProcessInfo.processInfo.systemUptime
+        if dayRolledOver || (uptime - lastUsagePersistUptime) >= Self.usagePersistInterval {
+            persistDailyUsageNow()
+            lastUsagePersistUptime = uptime
+        }
+    }
+
+    private func persistDailyUsageNow() {
         let defaults = UserDefaults.standard
-        defaults.set(today, forKey: Self.usageDayDefaultsKey)
-        defaults.set(Double(todayDownloadedBytes), forKey: Self.usageDownDefaultsKey)
-        defaults.set(Double(todayUploadedBytes), forKey: Self.usageUpDefaultsKey)
+        defaults.set(usageDayKey, forKey: Self.usageDayDefaultsKey)
+        defaults.set(Double(bufferedTodayDown), forKey: Self.usageDownDefaultsKey)
+        defaults.set(Double(bufferedTodayUp), forKey: Self.usageUpDefaultsKey)
     }
 
     private static func dayStamp(for date: Date) -> String {
@@ -339,8 +523,13 @@ final class VitalsStore {
             }
         }
 
-        menuBarAlertTone = severity
-        activeAlertSummary = reasons.isEmpty ? nil : reasons.joined(separator: " · ")
+        if menuBarAlertTone != severity {
+            menuBarAlertTone = severity
+        }
+        let nextSummary = reasons.isEmpty ? nil : reasons.joined(separator: " · ")
+        if activeAlertSummary != nextSummary {
+            activeAlertSummary = nextSummary
+        }
 
         if settings.notificationsEnabled, !pendingEvents.isEmpty {
             let notifier = self.notifier

@@ -102,13 +102,21 @@ final class AppRemoverStore {
         if let cached = iconCache[app.id] {
             return cached
         }
-        if iconCache.count >= 120 {
+        if iconCache.count >= 64 {
             iconCache.removeAll(keepingCapacity: true)
         }
-        let img = NSWorkspace.shared.icon(forFile: app.url.path)
-        img.size = NSSize(width: 32, height: 32)
-        iconCache[app.id] = img
-        return img
+        let raw = NSWorkspace.shared.icon(forFile: app.url.path)
+        let thumb = NSImage(size: NSSize(width: 24, height: 24), flipped: false) { rect in
+            NSGraphicsContext.current?.imageInterpolation = .high
+            raw.draw(in: rect, from: .zero, operation: .copy, fraction: 1.0)
+            return true
+        }
+        iconCache[app.id] = thumb
+        return thumb
+    }
+
+    func trimMemory() {
+        iconCache.removeAll(keepingCapacity: false)
     }
 
     func prepareRemoval(for app: InstalledApp) {
